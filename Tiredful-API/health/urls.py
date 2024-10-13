@@ -9,14 +9,14 @@
 # Copyright (C) 2017-2018 Payatu Software Labs
 # This file is part of Tiredful API application
 
-from django.conf.urls import url
+from django.urls import path, include
 from . import views
 
 urlpatterns = [
 
     # ex: /health/
-    url(r'^$', views.index, name='index'),
+    path(r'^$', views.index, name='index'),
 
     # ex: /activities/
-    url(r'^activities/$', views.get_activity, name='activities'),
+    path(r'^activities/$', views.get_activity, name='activities'),
 ]
