@@ -143,6 +143,8 @@ OAUTH2_PROVIDER = {
     'SCOPES': {'read': 'Read scope', 'write': 'Write scope', 'groups': 'Access to your groups'}
 }
 
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 # API Renderers
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (

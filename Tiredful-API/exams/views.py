@@ -15,7 +15,7 @@ from base64 import b64encode, b64decode
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated

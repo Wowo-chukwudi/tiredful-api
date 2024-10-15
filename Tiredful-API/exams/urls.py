@@ -9,14 +9,16 @@
 # Copyright (C) 2017-2018 Payatu Software Labs
 # This file is part of Tiredful API application
 
+app_name = 'exams'
+
 from django.urls import path, include
 from . import views
 
 urlpatterns = [
 
     # ex: /exams/
-    path(r'^$', views.index, name='index'),
+    path('', views.index, name='index'),
 
     # ex: /exams/score_card>
-    path(r'^exams/(?P<score_card>[0-9-=A-Za-z]+)/$', views.get_score, name='exams'),
+    path('exams/(?P<score_card>[0-9-=A-Za-z]+)/', views.get_score, name='exams'),
 ]

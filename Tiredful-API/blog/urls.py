@@ -9,18 +9,20 @@
 # Copyright (C) 2017-2018 Payatu Software Labs
 # This file is part of Tiredful API application
 
+app_name = 'blog'
+
 from django.urls import path, include
 from . import views
 
 urlpatterns = [
 
     # ex: /blog/
-    path(r'^$', views.index, name='index'),
+    path('', views.index, name='index'),
 
     # ex: /articles/<article-id>
-    path(r'^articles/(?P<article_id>[0-9]+)/$', views.article, name='articles'),
+    path('articles/(?P<article_id>[0-9]+)/', views.article, name='articles'),
 
     # ex: /approve-article/<article_id>
-    path(r'^approve-article/(?P<article_id>[0-9]+)/$', views.approve_article, name='approve-article'),
+    path('approve-article/(?P<article_id>[0-9]+)/', views.approve_article, name='approve-article'),
 
 ]
