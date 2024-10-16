@@ -1,5 +1,5 @@
 #Official base image. Alpine to reduce attack surface
-FROM python:3.9-alpine
+FROM python:3.13-alpine3.20
 LABEL maintainer=woworoseline@gmail.com
 
 #Copied only requirements first to help with caching
