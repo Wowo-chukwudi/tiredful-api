@@ -35,15 +35,31 @@ jobs:
         if: always()
 
       - name: Snyk code scan
-        run: |
-          npm install -g snyk
-          snyk test --file=requirements.txt > snyk-results.json
+      - uses: actions/checkout@master
+      
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/python@master
+        continue-on-error: true # To make sure that SARIF upload gets called
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --sarif-file-output=snyk.sarif
+      - name: Upload result to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: snyk.sarif
+          
+      - name: Run Snyk
+        run: snyk test --json > snyk-results.json
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         continue-on-error: true
       - uses: actions/upload-artifact@v4
         with:
           name: Snyk
           path: snyk-results.json
         if: always()
+        
         
 
   # snyk-check:
