@@ -43,18 +43,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --sarif-file-output=snyk.sarif
-      - name: Upload result to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: snyk.sarif
-        continue-on-error: true
-          
-      - name: Run Snyk
-        run: snyk test --json > snyk-results.json
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        continue-on-error: true
+          args: --json-file-output=snyk-results.json
       - uses: actions/upload-artifact@v4
         with:
           name: Snyk
