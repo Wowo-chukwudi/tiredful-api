@@ -1,0 +1,116 @@
+name: Build, Secure, and Deploy Docker Image to k0s
+on:
+  push:
+    branches: [ 'master' ]
+  pull_request:
+    branches: [ 'master' ]
+
+env:
+  DOCKER_IMAGE: devchukwudi/tiredful-api
+
+jobs:
+  code-scan:
+    name: Vulnerability Scans on code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Repo code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.13.0'
+      - run: |
+          pip install -r requirements.txt
+
+      - name: Using Safety to scan Python dependencies
+        run: |
+          pip install safety
+          safety check -r requirements.txt --json > safety-check.json
+        continue-on-error: true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Safety
+          path: safety-check.json
+        if: always()
+
+      - name: Snyk code scan
+        uses: actions/checkout@master
+      
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/python@master
+        continue-on-error: true # To make sure that SARIF upload gets called
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --json-file-output=snyk-results.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Snyk
+          path: snyk-results.json
+        if: always()
+        
+        
+
+  # snyk-check:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   steps:
+  #     - uses: actions/checkout@master
+  #     - uses: snyk/actions/setup@master
+  #     - name: Run Snyk
+  #       run: snyk test --json > snyk-results.json
+  #       env:
+  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+  #       continue-on-error: true
+
+
+  build-and-push-docker-image:
+    runs-on: ubuntu-latest
+    needs: code-scan
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+    
+      - name: Build and Push to Docker Hub
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.DOCKER_IMAGE }}:latest
+            ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
+
+  deploy-to-k0s:
+    runs-on: ubuntu-latest
+    needs: build-and-push-docker-image
+    steps:
+    - name: Checkout code repository
+      uses: actions/checkout@v4
+
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v1
+
+    - name: Configure kubectl for k0s
+      run: |
+        echo "${{ secrets.K0S_KUBECONFIG }}" > kubeconfig.yaml
+        chmod 600 kubeconfig.yaml
+
+    - name: Deploy to k0s cluster 
+      run: |
+        kubectl --kubeconfig=./kubeconfig.yaml apply -f deployment.yaml
+        kubectl --kubeconfig=./kubeconfig.yaml apply -f service.yaml
+        kubectl --kubeconfig=./kubeconfig.yaml set image deployment/myapp tiredful=${{ env.DOCKER_IMAGE }}:${{ github.sha }}
+
+    - name: Verify Deployment
+      run: |
+        kubectl --kubeconfig=./kubeconfig.yaml get pods
+        kubectl --kubeconfig=./kubeconfig.yaml rollout status deployment/myapp
