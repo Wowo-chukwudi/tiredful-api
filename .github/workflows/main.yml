@@ -6,7 +6,7 @@ on:
     branches: [ 'master' ]
 
 env:
-  DOCKER_IMAGE: devchukwudi/tiredful-api
+  DOCKER_IMAGE: devchukwudi/tiredful-api:latest
 
 jobs:
   build:
@@ -26,7 +26,9 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v4
-      - run: docker run --rm -v $(pwd):/src hysnec/saftey check -r requirements.txt --json > safety-check.json
+      - run: |
+          pip install safety
+          safety check -r requirements.txt --json > safety-check.json
         continue-on-error: true
       - uses: actions/upload-artifact@v4
         with:
