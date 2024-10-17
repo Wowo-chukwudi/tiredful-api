@@ -6,27 +6,25 @@ on:
     branches: [ 'master' ]
 
 env:
-  DOCKER_IMAGE: devchukwudi/tiredful-api:latest
+  DOCKER_IMAGE: devchukwudi/tiredful-api
 
 jobs:
-  build:
+  code-scan:
+    name: Vulnerability Scans on code
     runs-on: ubuntu-latest
     steps:
       - name: Check out Repo code
         uses: actions/checkout@v4
+        
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
           python-version: '3.13.0'
       - run: |
           pip install -r requirements.txt
-          
-  safety-scan:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - uses: actions/checkout@v4
-      - run: |
+
+      - name: Using Safety to scan Python dependencies
+        run: |
           pip install safety
           safety check -r requirements.txt --json > safety-check.json
         continue-on-error: true
@@ -35,27 +33,35 @@ jobs:
           name: Safety
           path: safety-check.json
         if: always()
-        
-  snyk-check:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - uses: actions/checkout@master
-      - uses: snyk/actions/setup@master
-      - name: Run Snyk
-        run: snyk test --json > snyk-results.json
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Snyk code scan
+        run: |
+          npm install -g snyk
+          snyk test --file=requirements.txt > snyk-results.json
         continue-on-error: true
       - uses: actions/upload-artifact@v4
         with:
           name: Snyk
           path: snyk-results.json
         if: always()
+        
+
+  # snyk-check:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   steps:
+  #     - uses: actions/checkout@master
+  #     - uses: snyk/actions/setup@master
+  #     - name: Run Snyk
+  #       run: snyk test --json > snyk-results.json
+  #       env:
+  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+  #       continue-on-error: true
+
 
   build-and-push-docker-image:
     runs-on: ubuntu-latest
-    needs: [safety-scan, snyk-check]
+    needs: code-scan
     steps:
       - uses: actions/checkout@v4
       
