@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: docker run --rm -v $(pwd):/src hysnec/saftey check -r requirements.txt --json > safety-check.json
         continue-on-error: true
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: Safety
           path: safety-check.json
@@ -45,7 +45,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         continue-on-error: true
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: Snyk
           path: snyk-results.json
