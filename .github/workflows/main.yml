@@ -108,7 +108,7 @@ jobs:
 
   deploy-to-kind:
     runs-on: ubuntu-latest
-    needs: build-and-push-docker-image  
+    needs: build-push-scan-docker-image  
 
     steps:
     - name: Checkout code repository
