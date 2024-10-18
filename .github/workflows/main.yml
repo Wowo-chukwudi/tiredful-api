@@ -105,8 +105,8 @@ jobs:
       run: |
         echo "$KUBE_CONFIG" > kubeconfig
         export KUBECONFIG=./kubeconfig
-        kubectl apply -f k8s/deployment.yaml
-        kubectl apply -f k8s/service.yaml
+        kubectl apply -f deployment.yaml
+        kubectl apply -f service.yaml
         kubectl set image deployment/myapp tiredful=devchukwudi/tiredful-api:${{ github.sha }}
 
     - name: Verify deployment
