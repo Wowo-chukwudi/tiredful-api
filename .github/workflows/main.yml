@@ -99,18 +99,20 @@ jobs:
     - name: Set up kubectl
       uses: azure/setup-kubectl@v1
 
-    - name: Configure kubectl for k0s
+    - name: Deploy to Kubernetes
+      env:
+        KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
       run: |
-        echo "${{ secrets.K0S_KUBECONFIG }}" > kubeconfig.yaml
-        chmod 600 kubeconfig.yaml
+        echo "$KUBE_CONFIG" > kubeconfig
+        export KUBECONFIG=./kubeconfig
+        kubectl apply -f k8s/deployment.yaml
+        kubectl apply -f k8s/service.yaml
+        kubectl set image deployment/myapp tiredful=devchukwudi/tiredful-api:${{ github.sha }}
 
-    - name: Deploy to k0s cluster 
+    - name: Verify deployment
+      env:
+        KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
       run: |
-        kubectl --kubeconfig=./kubeconfig.yaml apply -f deployment.yaml
-        kubectl --kubeconfig=./kubeconfig.yaml apply -f service.yaml
-        kubectl --kubeconfig=./kubeconfig.yaml set image deployment/myapp tiredful=${{ env.DOCKER_IMAGE }}:${{ github.sha }}
-
-    - name: Verify Deployment
-      run: |
-        kubectl --kubeconfig=./kubeconfig.yaml get pods
-        kubectl --kubeconfig=./kubeconfig.yaml rollout status deployment/myapp
+        echo "$KUBE_CONFIG" > kubeconfig
+        export KUBECONFIG=./kubeconfig
+        kubectl rollout status deployment/myapp
