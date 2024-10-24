@@ -98,11 +98,14 @@ jobs:
     - name: Set up KinD cluster
       uses: helm/kind-action@v1.2.0
 
+    - name: Create Kind cluster
+      run: kind create cluster --name tiredful-api
+
     # Step 2: Load image into KinD
     - name: Load Docker image into KinD
       run: |
         sudo docker pull devchukwudi/tiredful-api:latest
-        sudo kind load docker-image devchukwudi/tiredful-api:latest --name tiredful
+        sudo kind load docker-image devchukwudi/tiredful-api:latest --name tiredful-api
 
     # Step 3:: Apply Kubernetes manifests
     - name: Deploy to KinD Kubernetes 
