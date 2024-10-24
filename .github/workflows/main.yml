@@ -67,7 +67,7 @@ jobs:
     
       - name: Build and Push to Docker Hub
         run: |
-          docker build -t devchukwudi/tiredful-api:latest
+          docker build -t devchukwudi/tiredful-api:latest .
           docker push devchukwudi/tiredful-api:latest
 
       - name: Scan with Docker Scout
