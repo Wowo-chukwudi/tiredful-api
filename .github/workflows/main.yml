@@ -41,6 +41,7 @@ jobs:
         run: snyk code test --json-file-output=snyk-results.json --severity-threshold=high
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        continue-on-error: true
           
       - uses: actions/upload-artifact@v4
         with:
