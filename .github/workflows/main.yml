@@ -27,7 +27,7 @@ jobs:
     name: Snyk Scan
     runs-on: ubuntu-latest
     needs: oast-safety
-     steps:
+    steps:
       - uses: actions/checkout@master
       - uses: snyk/actions/setup@master
       - uses: actions/setup-python@v5
