@@ -33,9 +33,7 @@ jobs:
         sudo k0s kubeconfig admin > kubeconfig
         export KUBECONFIG=$PWD/kubeconfig
 
-        cat kubeconfig
-
-        # kubectl get nodes
+        kubectl get nodes
 
         # kubectl apply -f deployment.yaml 
         # kubectl apply -f service.yaml
