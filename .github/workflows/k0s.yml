@@ -28,8 +28,18 @@ jobs:
     - name: SSH into Azure VM and Run Commands
       run: |
         ssh azureuser@$(az vm show -d -g cg-final-project -n tiredful --query publicIps -o tsv) << EOF
-        # Place your commands here
-        echo "Connected to Azure VM!"
+        echo "Azure connected!"
+        
+        sudo k0s restart
+        sudo k0s kubeconfig admin > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
+
+        kubectl get nodes
+
+        kubectl apply -f deployment.yaml 
+        kubectl apply -f service.yaml
+        kubectl set image deployment/myapp tiredful=devchukwudi/tiredful-api:${{ github.sha }}
+        
         EOF
 
     # - name: Set up kubectl
