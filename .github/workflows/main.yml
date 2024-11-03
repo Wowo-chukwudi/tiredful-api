@@ -1,7 +1,7 @@
 name: Build, Secure, and Deploy Docker Image to KinD
 on:
-  # push:
-  #   branches: [ 'master' ]
+  push:
+    branches: [ 'master' ]
   pull_request:
     branches: [ 'master' ]
 
@@ -163,11 +163,30 @@ jobs:
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H $(az vm show -d -g cg-final-project -n tiredful --query publicIps -o tsv) >> ~/.ssh/known_hosts
 
-    - name: SSH into Azure VM and Run Commands
+    - name: SSH into Azure VM and Deploy to k0s
       run: |
-        ssh azureuser@$(az vm show -d -g cg-final-project -n tiredful --query publicIps -o tsv) << EOF
-        # Place your commands here
-        echo "Connected to Azure VM!"
+        # First copy the deployment files
+        scp -i ~/.ssh/id_rsa deployment.yaml service.yaml azureuser@${{ secrets.AZ_HOST }}:~/
+
+        # Then SSH and apply the configurations
+        ssh -i ~/.ssh/id_rsa azureuser@${{ secrets.AZ_HOST }} << EOF
+        
+          # Apply the kubernetes configurations
+          sudo k0s kubectl apply -f ~/deployment.yaml 
+          sudo k0s kubectl apply -f ~/service.yaml
+          sudo k0s kubectl rollout status deployment/myapp
+          
+          echo "Waiting for pods to be ready..."
+          sudo k0s kubectl rollout status deployment/myapp --timeout=120s
+          
+          echo "Service Details:"
+          sudo k0s kubectl get services
+          
+          echo "Pod Details:"
+          sudo k0s kubectl get pods
+
+          echo "Tiredful-API is ready"
+        
         EOF
 
     # - name: Set up kubectl
