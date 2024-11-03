@@ -32,10 +32,10 @@ jobs:
         VM_IP: $(az vm show -d -g cg-final-project -n tiredful --query publicIps -o tsv)
       run: |
         # First copy the deployment files
-        scp -i ~/.ssh/id_rsa deployment.yaml service.yaml azureuser@${VM_IP}:~/
+        scp -i ~/.ssh/id_rsa deployment.yaml service.yaml azureuser@${{ secrets.AZ_HOST }}:~/
 
         # Then SSH and apply the configurations
-        ssh -i ~/.ssh/id_rsa azureuser@${VM_IP} << EOF
+        ssh -i ~/.ssh/id_rsa azureuser@${{ secrets.AZ_HOST }} << EOF
         
           # Apply the kubernetes configurations
           sudo k0s kubectl apply -f ~/deployment.yaml 
