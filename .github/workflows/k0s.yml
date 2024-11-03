@@ -30,8 +30,11 @@ jobs:
         ssh azureuser@$(az vm show -d -g cg-final-project -n tiredful --query publicIps -o tsv) << EOF
         echo "Azure connected!"
         
-        echo "$KUBE_CONFIG" > kubeconfig
-        export KUBECONFIG=./kubeconfig
+        sudo k0s install controller --single
+        sudo k0s start
+
+        sudo k0s kubeconfig admin > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
 
         cat kubeconfig
 
