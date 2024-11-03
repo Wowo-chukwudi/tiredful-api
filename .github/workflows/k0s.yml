@@ -40,11 +40,28 @@ jobs:
           # Apply the kubernetes configurations
           sudo k0s kubectl apply -f ~/deployment.yaml 
           sudo k0s kubectl apply -f ~/service.yaml
-          sudo k0s kubectl rollout status deployment/tiredful-api
+          sudo k0s kubectl rollout status deployment/myapp
           
-          # Verify the deployment
-          sudo k0s kubectl get pods
+        echo "Waiting for pods to be ready..."
+          sleep 30  # Initial delay to let pods start
+          
+          # Wait for deployment to be ready
+          sudo k0s kubectl rollout status deployment/myapp --timeout=120s
+          
+          echo "Waiting for service to get external IP..."
+          sleep 30  # Give time for LoadBalancer to get external IP
+          
+          # Get service info
+          echo "Service Details:"
           sudo k0s kubectl get services
+          
+          # Get the external IP of the service
+          EXTERNAL_IP=$(sudo k0s kubectl get service myapp -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          echo "Your API will be accessible at: http://$EXTERNAL_IP"
+          
+          # Show pod status
+          echo "Pod Details:"
+          sudo k0s kubectl get pods
         
         EOF
 
