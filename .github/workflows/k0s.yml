@@ -35,7 +35,7 @@ jobs:
         curl -k https://127.0.0.1:6443/version
 
         sudo k0s kubeconfig create admin > kubeconfig
-        rm -rf ~/.kube/cache
+        chmod 600 kubeconfig
         export KUBECONFIG=$PWD/kubeconfig
         
         sudo k0s status  # Check K0s status
