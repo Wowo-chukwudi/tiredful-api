@@ -30,13 +30,13 @@ jobs:
         ssh azureuser@$(az vm show -d -g cg-final-project -n tiredful --query publicIps -o tsv) << EOF
         echo "Azure connected!"
 
+        echo "${{ secrets.KUBE_CONFIG }}" > kubeconfig
+        chmod 600 kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
+
         ls -l kubeconfig
 
         curl -k https://127.0.0.1:6443/version
-
-        sudo k0s kubeconfig create admin > kubeconfig
-        chmod 600 kubeconfig
-        export KUBECONFIG=$PWD/kubeconfig
         
         sudo k0s status  # Check K0s status
         kubectl get nodes --request-timeout='60s'
