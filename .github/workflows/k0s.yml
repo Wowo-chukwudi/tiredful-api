@@ -29,15 +29,22 @@ jobs:
       env:
         AZ_HOST: ${{ secrets.AZ_HOST }}
         AZ_USER: ${{ secrets.AZ_USER }}
+        VM_IP: $(az vm show -d -g cg-final-project -n tiredful --query publicIps -o tsv)
       run: |
-        ssh azureuser@$(az vm show -d -g cg-final-project -n tiredful --query publicIps -o tsv) << EOF
-        echo "Azure connected!"
+        # First copy the deployment files
+        scp -i ~/.ssh/id_rsa deployment.yaml service.yaml azureuser@${VM_IP}:~/
 
-        scp -o StrictHostKeyChecking=no -r ./* AZ_USER@AZ_HOST:/home/AZ_USER
-
-        k0s kubectl apply -f deployment.yaml 
-        k0s kubectl apply -f service.yaml
-        k0s kubectl set image deployment/myapp tiredful=devchukwudi/tiredful-api:${{ github.sha }}
+        # Then SSH and apply the configurations
+        ssh -i ~/.ssh/id_rsa azureuser@${VM_IP} << EOF
+        
+          # Apply the kubernetes configurations
+          sudo k0s kubectl apply -f ~/deployment.yaml 
+          sudo k0s kubectl apply -f ~/service.yaml
+          sudo k0s kubectl rollout status deployment/tiredful-api
+          
+          # Verify the deployment
+          sudo k0s kubectl get pods
+          sudo k0s kubectl get services
         
         EOF
 
