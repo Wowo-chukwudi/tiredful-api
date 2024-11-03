@@ -26,29 +26,18 @@ jobs:
         ssh-keyscan -H $(az vm show -d -g cg-final-project -n tiredful --query publicIps -o tsv) >> ~/.ssh/known_hosts
 
     - name: SSH into Azure VM and Run Commands
+      env:
+        AZ_HOST: ${{ secrets.AZ_HOST }}
+        AZ_USER: ${{ secrets.AZ_USER }}
       run: |
         ssh azureuser@$(az vm show -d -g cg-final-project -n tiredful --query publicIps -o tsv) << EOF
         echo "Azure connected!"
 
-        sudo k0s start
-        
-        k0s kubeconfig admin > kubeconfig
-        chmod 600 kubeconfig
-        rm -rf ~/.kube/cache
-        export KUBECONFIG=$PWD/kubeconfig
+        scp -o StrictHostKeyChecking=no -r ./* AZ_USER@AZ_HOST:/home/AZ_USER
 
-        ls -l kubeconfig
-
-        curl -k https://127.0.0.1:6443/version
-        
-        sudo k0s status  # Check K0s status
-        kubectl get nodes --request-timeout='60s'
-
-        kubectl get nodes
-
-        # kubectl apply -f deployment.yaml 
-        # kubectl apply -f service.yaml
-        # kubectl set image deployment/myapp tiredful=devchukwudi/tiredful-api:${{ github.sha }}
+        k0s kubectl apply -f deployment.yaml 
+        k0s kubectl apply -f service.yaml
+        k0s kubectl set image deployment/myapp tiredful=devchukwudi/tiredful-api:${{ github.sha }}
         
         EOF
 
