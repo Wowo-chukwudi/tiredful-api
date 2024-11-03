@@ -32,6 +32,8 @@ jobs:
 
         sudo k0s kubeconfig admin > kubeconfig
         export KUBECONFIG=$PWD/kubeconfig
+        sudo k0s status  # Check K0s status
+        kubectl get nodes --request-timeout='60s'
 
         kubectl get nodes
 
