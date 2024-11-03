@@ -1,0 +1,57 @@
+name: k0s test runs
+on:
+  push:
+    branches: [ 'master' ]
+  pull_request:
+    branches: [ 'master' ]
+
+
+jobs:
+  deploy-to-k0s:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code repository
+      uses: actions/checkout@v4
+
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Set up SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H $(az vm show -d -g cg-final-project -n tiredful --query publicIps -o tsv) >> ~/.ssh/known_hosts
+
+    - name: SSH into Azure VM and Run Commands
+      run: |
+        ssh azureuser@$(az vm show -d -g cg-final-project -n tiredful --query publicIps -o tsv) << EOF
+        # Place your commands here
+        echo "Connected to Azure VM!"
+        EOF
+
+    # - name: Set up kubectl
+    #   uses: azure/setup-kubectl@v1
+
+    # - name: Deploy to Kubernetes
+    #   env:
+    #     KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+    #     SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+    #   run: |
+    #     ssh azureuser
+    #     # echo "$KUBE_CONFIG" > kubeconfig
+    #     # export KUBECONFIG=./kubeconfig
+    #     # kubectl --kubeconfig ./kubeconfig get nodes
+    #     kubectl apply -f deployment.yaml 
+    #     kubectl apply -f service.yaml 
+    #     kubectl set image deployment/myapp tiredful=devchukwudi/tiredful-api:${{ github.sha }}
+
+    # - name: Verify deployment
+    #   env:
+    #     KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+    #   run: |
+    #     echo "$KUBE_CONFIG" > kubeconfig
+    #     export KUBECONFIG=./kubeconfig
+    #     kubectl rollout status deployment/myapp
