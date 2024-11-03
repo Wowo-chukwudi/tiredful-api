@@ -30,14 +30,13 @@ jobs:
         ssh azureuser@$(az vm show -d -g cg-final-project -n tiredful --query publicIps -o tsv) << EOF
         echo "Azure connected!"
 
-        cat /var/lib/k0s
-
-        ps aux | grep k0s
-
-
-        echo "${{ secrets.KUBE_CONFIG }}" > kubeconfig
+        sudo k0s stop
+        sudo k0s start
+        
+        k0s kubeconfig admin > kubeconfig
         chmod 600 kubeconfig
-        export KUBECONFIG=$PWD/kubeconfig:8001
+        rm -rf ~/.kube/cache
+        export KUBECONFIG=$PWD/kubeconfig
 
         ls -l kubeconfig
 
