@@ -1,7 +1,7 @@
 name: Build, Secure, and Deploy Docker Image to KinD
 on:
-  push:
-    branches: [ 'master' ]
+  # push:
+  #   branches: [ 'master' ]
   pull_request:
     branches: [ 'master' ]
 
