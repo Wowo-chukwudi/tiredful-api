@@ -32,7 +32,7 @@ jobs:
 
         curl -k https://127.0.0.1:6443/version
 
-        sudo k0s kubeconfig admin > kubeconfig
+        sudo k0s kubeconfig create admin > kubeconfig
         rm -rf ~/.kube/cache
         export KUBECONFIG=$PWD/kubeconfig
         
